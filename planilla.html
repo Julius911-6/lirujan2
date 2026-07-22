@@ -7,23 +7,34 @@
 
   <!-- html2pdf -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-  <!-- Supabase JS (cliente) - NO incluyas keys en el repo; configura las variables en planilla.js -->
+  <!-- Supabase JS (cliente) - NO incluyas keys en el repo; configura las variables en planilla.config.js -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/supabase.min.js"></script>
 
   <style>
     body { font-family: Arial, sans-serif; margin: 20px; color: #222; }
-    .panel-cierre-caja { background: #f8f9fa; padding: 15px; border-radius: 8px; max-width: 900px; }
-    .panel-cierre-caja input { width: 120px; }
+    .panel-cierre-caja { background: #f8f9fa; padding: 15px; border-radius: 8px; max-width: 1000px; }
+    .panel-cierre-caja input, .panel-cierre-caja select { width: auto; }
     .panel-cierre-caja button { margin-left: 10px; }
 
-    /* Estilos modestos para la plantilla (se aplica cuando se hace visible) */
-    #plantilla-pdf { padding: 20px; font-family: Arial, sans-serif; display: none; color: #222; }
+    /* Estilos para la plantilla (se aplica cuando se hace visible) */
+    #plantilla-pdf { padding: 20px; font-family: Arial, sans-serif; display: none; color: #222; background: white; }
     #plantilla-pdf h1 { font-size: 22px; margin: 0; }
     .bus-seccion { margin-bottom: 20px; }
     .bus-header { background-color: #f2f2f2; padding: 6px; font-weight: bold; border: 1px solid #ccc; font-size: 13px; }
     .pdf-table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 5px; }
     .pdf-table th, .pdf-table td { border: 1px solid #ddd; padding: 4px; }
     .pdf-table thead tr { background-color: #e5e5e5; text-align: left; }
+
+    /* Encabezado del PDF */
+    .pdf-header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 15px; }
+    .pdf-logo { max-height: 60px; display: block; margin: 0 auto 6px; }
+
+    /* Firma */
+    .firmas { margin-top: 30px; display: flex; gap: 20px; }
+    .firma { flex: 1; text-align: center; font-size: 12px; }
+    .firma .line { border-top: 1px solid #000; margin-top: 40px; }
+
+    /* Ajustes para impresión en A4/Letter: html2pdf/jsPDF maneja tamaño, solo CSS limpio */
   </style>
 </head>
 <body>
@@ -33,12 +44,23 @@
   <div class="panel-cierre-caja">
     <h3>Cierre y Resumen de Cuenta Diario</h3>
 
-    <label for="input-otros-ingresos"><strong>Otros Ingresos (Encomiendas/Cargas) en Bs:</strong></label>
-    <input type="number" id="input-otros-ingresos" placeholder="0.00" min="0" step="0.50" value="0.00">
+    <label for="date-select"><strong>Fecha:</strong></label>
+    <input type="date" id="date-select" style="margin-left:8px;">
+
+    <label for="input-otros-ingresos" style="margin-left:14px;"><strong>Otros Ingresos (Bs):</strong></label>
+    <input type="number" id="input-otros-ingresos" placeholder="0.00" min="0" step="0.50" value="0.00" style="margin-left:8px;">
+
+    <label for="pdf-format" style="margin-left:14px;"><strong>Formato PDF:</strong></label>
+    <select id="pdf-format" style="margin-left:8px;">
+      <option value="letter">Letter</option>
+      <option value="a4">A4</option>
+    </select>
 
     <button id="btn-descargar" style="background-color: #28a745; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer;">
       📄 Descargar Planilla Diaria en PDF
     </button>
+
+    <p style="margin-top:10px;color:#666;font-size:13px;">Nota: Si configuras <code>planilla.config.js</code> con las variables, la página intentará obtener datos reales desde Supabase o desde un endpoint seguro.</p>
   </div>
 
   <hr style="margin: 20px 0;">
@@ -48,7 +70,8 @@
   <div id="plantilla-pdf" aria-hidden="true">
 
     <!-- Encabezado Principal -->
-    <div style="text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 15px;">
+    <div class="pdf-header">
+      <img id="pdf-logo" class="pdf-logo" src="" alt="logo" style="display:none;" />
       <h1 style="margin: 0; font-size: 22px;">TRANSPORTE "LIRUJHAN"</h1>
       <h3 style="margin: 5px 0 0 0; color: #555;">RESUMEN Y PLANILLA GENERAL DE CUENTA DIARIA</h3>
       <p style="margin: 5px 0 0 0; font-size: 14px;"><strong>Fecha:</strong> <span id="pdf-fecha">22/07/2026</span></p>
@@ -78,6 +101,23 @@
     </div>
 
     <div style="clear: both;"></div>
+
+    <!-- Firmas -->
+    <div class="firmas">
+      <div class="firma">
+        <div class="line"></div>
+        <div>Chofer</div>
+      </div>
+      <div class="firma">
+        <div class="line"></div>
+        <div>Recaudador</div>
+      </div>
+      <div class="firma">
+        <div class="line"></div>
+        <div>Gerente</div>
+      </div>
+    </div>
+
   </div>
 
   <script src="planilla.js"></script>
