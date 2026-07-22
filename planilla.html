@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Planilla Diaria — LIRUJHAN (demo)</title>
+
+  <!-- html2pdf -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; color: #222; }
+    .panel-cierre-caja { background: #f8f9fa; padding: 15px; border-radius: 8px; max-width: 900px; }
+    .panel-cierre-caja input { width: 120px; }
+    .panel-cierre-caja button { margin-left: 10px; }
+
+    /* Estilos modestos para la plantilla (se aplica cuando se hace visible) */
+    #plantilla-pdf { padding: 20px; font-family: Arial, sans-serif; display: none; color: #222; }
+    #plantilla-pdf h1 { font-size: 22px; margin: 0; }
+    .bus-seccion { margin-bottom: 20px; }
+    .bus-header { background-color: #f2f2f2; padding: 6px; font-weight: bold; border: 1px solid #ccc; font-size: 13px; }
+    .pdf-table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 5px; }
+    .pdf-table th, .pdf-table td { border: 1px solid #ddd; padding: 4px; }
+    .pdf-table thead tr { background-color: #e5e5e5; text-align: left; }
+  </style>
+</head>
+<body>
+
+  <h2>Demo — Generar Planilla Diaria (Agrupación por Bus / Salida)</h2>
+
+  <div class="panel-cierre-caja">
+    <h3>Cierre y Resumen de Cuenta Diario</h3>
+
+    <label for="input-otros-ingresos"><strong>Otros Ingresos (Encomiendas/Cargas) en Bs:</strong></label>
+    <input type="number" id="input-otros-ingresos" placeholder="0.00" min="0" step="0.50" value="0.00">
+
+    <button id="btn-descargar" style="background-color: #28a745; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer;">
+      📄 Descargar Planilla Diaria en PDF
+    </button>
+  </div>
+
+  <hr style="margin: 20px 0;">
+
+  <p>Vista previa (oculta durante carga a PDF):</p>
+  <!-- Plantilla para el PDF Diario de LIRUJHAN -->
+  <div id="plantilla-pdf" aria-hidden="true">
+
+    <!-- Encabezado Principal -->
+    <div style="text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 15px;">
+      <h1 style="margin: 0; font-size: 22px;">TRANSPORTE "LIRUJHAN"</h1>
+      <h3 style="margin: 5px 0 0 0; color: #555;">RESUMEN Y PLANILLA GENERAL DE CUENTA DIARIA</h3>
+      <p style="margin: 5px 0 0 0; font-size: 14px;"><strong>Fecha:</strong> <span id="pdf-fecha">22/07/2026</span></p>
+    </div>
+
+    <!-- Contenedor donde se insertarán dinámicamente las planillas de cada bus -->
+    <div id="pdf-bloque-buses"></div>
+
+    <hr style="border: 0; border-top: 1px dashed #aaa; margin: 20px 0;">
+
+    <!-- Resumen Final de Cuentas -->
+    <div style="width: 50%; float: right; font-size: 12px;">
+      <table style="width: 100%; border-collapse: collapse;">
+        <tr>
+          <td style="padding: 4px;"><strong>Total Venta Pasajes:</strong></td>
+          <td style="text-align: right; padding: 4px;">Bs. <span id="pdf-total-pasajes">0.00</span></td>
+        </tr>
+        <tr>
+          <td style="padding: 4px;"><strong>Otros Ingresos (Encomiendas/Carga):</strong></td>
+          <td style="text-align: right; padding: 4px;">Bs. <span id="pdf-otros-ingresos">0.00</span></td>
+        </tr>
+        <tr style="border-top: 2px solid #000; font-size: 14px; font-weight: bold;">
+          <td style="padding: 6px 4px;">TOTAL GENERAL DEL DÍA:</td>
+          <td style="text-align: right; padding: 6px 4px;">Bs. <span id="pdf-total-general">0.00</span></td>
+        </tr>
+      </table>
+    </div>
+
+    <div style="clear: both;"></div>
+  </div>
+
+  <script src="planilla.js"></script>
+</body>
+</html>
