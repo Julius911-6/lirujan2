@@ -1,0 +1,12 @@
+# Local config (no subir)
+planilla.config.js
+.env
+
+# Node
+node_modules/
+
+# Local env overrides
+.env.local
+
+# OS
+.DS_Store
