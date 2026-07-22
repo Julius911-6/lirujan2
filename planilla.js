@@ -1,7 +1,22 @@
 // planilla.js
 // Lógica para renderizar la plantilla y generar el PDF con html2pdf
 
-// Demo: estructura esperada de 'ventasDelDia'
+// ---------- CONFIGURACIÓN SUPABASE (NO PONER KEYS EN EL REPO) ----------
+// Rellena estas constantes en tu entorno o en un archivo de configuración seguro.
+const SUPABASE_URL = 'TU_SUPABASE_URL_AQUI';
+const SUPABASE_ANON_KEY = 'TU_SUPABASE_ANON_KEY_AQUI';
+
+// Inicializa el cliente Supabase (se hará efectivo sólo si reemplazas las constantes)
+let supabase = null;
+if (SUPABASE_URL && SUPABASE_ANON_KEY && !SUPABASE_URL.includes('TU_SUPABASE')) {
+  try {
+    supabase = supabaseJs.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  } catch (err) {
+    console.warn('No se pudo inicializar Supabase (variables no configuradas o biblioteca no disponible).');
+  }
+}
+
+// Demo: estructura esperada de 'ventasDelDia' (se usa si no hay Supabase configurado)
 // Cada "salida" / bus tiene: unidad, chofer, hora, asientos: [{nro, pasajero, destino, monto}]
 const ventasDelDiaDemo = [
   {
@@ -83,6 +98,36 @@ function calcularTotalPasajes(ventas) {
   }, 0);
 }
 
+// ---------- HELPERS para Supabase (esquema: salidas + asientos) ----------
+function hoyISO(date = new Date()) {
+  return date.toISOString().slice(0,10);
+}
+
+async function fetchVentasDelDia_Supabase_Salidas(fechaISO = hoyISO()) {
+  if (!supabase) throw new Error('Supabase no configurado.');
+
+  // Ajusta los nombres de tablas/columnas si tu esquema varía
+  const { data, error } = await supabase
+    .from('salidas')
+    .select('id, unidad, chofer, hora, asientos(*)')
+    .eq('fecha', fechaISO)
+    .order('hora', { ascending: true });
+
+  if (error) throw error;
+
+  return data.map(s => ({
+    unidad: s.unidad,
+    chofer: s.chofer,
+    hora: s.hora,
+    asientos: (s.asientos || []).map(a => ({
+      nro: a.asiento_nro,
+      pasajero: a.pasajero,
+      destino: a.destino,
+      monto: Number(a.monto || 0)
+    }))
+  }));
+}
+
 function descargarPlanillaDiariaPDF(ventasDelDia) {
   // 1. Fecha
   const fechaHoy = new Date().toLocaleDateString('es-BO');
@@ -124,15 +169,21 @@ function descargarPlanillaDiariaPDF(ventasDelDia) {
   });
 }
 
-// Si quieres usar datos reales de Firebase / Supabase reemplaza esta función
-// por una llamada que obtenga las ventas del día.
-// Ejemplo (pseudo):
-// async function fetchVentasDelDia(fecha) { /* consultar tu BD y devolver array */ }
-
-document.getElementById('btn-descargar').addEventListener('click', () => {
-  // Aquí puedes cambiar ventasDelDiaDemo por la data real si la consultas antes.
-  descargarPlanillaDiariaPDF(ventasDelDiaDemo);
+// Listener adaptado: si Supabase está configurado, obtén datos reales; si no, usa demo
+document.getElementById('btn-descargar').addEventListener('click', async () => {
+  if (supabase) {
+    try {
+      const ventas = await fetchVentasDelDia_Supabase_Salidas();
+      descargarPlanillaDiariaPDF(ventas);
+    } catch (err) {
+      console.error('Error al cargar ventas desde Supabase:', err.message || err);
+      alert('Error al cargar las ventas desde Supabase. Revisa la consola.');
+    }
+  } else {
+    // fallback demo
+    descargarPlanillaDiariaPDF(ventasDelDiaDemo);
+  }
 });
 
-// Render inicial en la página para previsualizar
+// Render inicial en la página para previsualizar (demo)
 renderBusesEnPlantilla(ventasDelDiaDemo);
